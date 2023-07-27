@@ -1,8 +1,7 @@
-// SearchBar.js
 import React from 'react';
 
 const SearchBar = ({ onSearch }) => {
-    
+
   const handleInputChange = (event) => {
     console.log("InputChange")
     console.log(event.target.value, "VAL")

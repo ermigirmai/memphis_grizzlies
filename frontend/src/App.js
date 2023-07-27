@@ -1,15 +1,30 @@
 import React, {useState, useEffect} from 'react';
+import { BrowserRouter, Route, Routes } from 'react-router-dom';
+
+import './App.css';
 
 import Header from './components/Header';
 import YearDropdown from './components/YearDropdown';
 import SearchBar from './components/SearchBar';
 import PlayersDropdown from './components/PlayersDropdown';
+import ComparePlayers from './components/ComparePlayers';
+
+import DrillResultsSection from './components/DrillResultsSection';
+import SpotShootingSection from './components/SpotShootingSection';
+import NonStationaryShootingSection from './components/NonStationaryShootingSection';
+import PlayerAnthroSection from './components/PlayerAnthroSection';
 
 function App(){
   const years = ["2019", "2020", "2021", "2022", "2023"];
+  const PLAYER_ID_INDEX = 1;
 
-  const [playerNames, setPlayerNames] = useState([]);
   const [selectedYear, setSelectedYear] = useState(years[0]);
+  const [selectedPlayer, setSelectedPlayer] = useState(null);
+
+  const [playerCombineStatsAnthroAverage, setPlayerCombineStatsAnthroAverage] = useState([{}])
+  const [playerCombineStatsDrillAverage, setPlayerCombineStatsDrillAverage] = useState([{}])
+  const [playerCombineStatsSpotShootingAverage, setPlayerCombineStatsSpotShootingAverage] = useState([{}])
+  const [playerCombineStatsNonStationaryAverage, setPlayerCombineStatsNonStationaryAverage] = useState([{}])
 
   const [playerCombineStats, setPlayerCombineStats] = useState([{}]);
   const [playerDrillResults, setPlayerDrillResults] = useState([{}])
@@ -18,17 +33,19 @@ function App(){
   const [playerAnthro, setPlayerAnthro] = useState([{}])
 
   const handleYearChange = (year) => {
+    setSelectedPlayer(null)
     setSelectedYear(year);
-    // Perform any actions you need based on the selected year (e.g., API call)
   };
 
-  const handlePlayerNameSelect = (selectedPlayerName) => {
-    console.log('App.js::Selected Player: ', selectedPlayerName)
+  const handlePlayerSelected = (selectedPlayerName, selectedPlayerId) =>
+  {
+    const selectedPlayerData = playerCombineStats.find((player) => player[PLAYER_ID_INDEX] == selectedPlayerId);
+
+    setSelectedPlayer(selectedPlayerData);
   }
 
   const handleSearch = (searchTerm) => {
-    // Your filtering logic here using the 'searchTerm'
-    // Example: Filter the playerData array based on the player's name
+    // Filtering logic here using the 'searchTerm'
     const filteredPlayers = playerCombineStats.filter(
       (player) =>
         player[2] && player[2].toLowerCase().includes(searchTerm.toLowerCase()) // Assuming the player's name is in the second index of the player data array
@@ -42,9 +59,8 @@ function App(){
       res => res.json()
     ).then(
       data => {
-        setPlayerCombineStats(data)
-        setPlayerNames(data['resultSets'][0]['rowSet'])
-        //console.log(data['resultSets'][0]['rowSet'])
+        setPlayerCombineStats(data['resultSets'][0]['rowSet'])
+        //console.log("comb", data['resultSets'][0]['rowSet'][5])
       }
     )
 
@@ -52,7 +68,7 @@ function App(){
       res => res.json()
     ).then(
       data => {
-        console.log(data['resultSets'][0]['rowSet'])
+        //console.log("drill", data['resultSets'][0]['rowSet'][5])
         setPlayerDrillResults(data['resultSets'][0]['rowSet'])
       }
     )
@@ -61,7 +77,7 @@ function App(){
       res => res.json()
     ).then(
       data => {
-        //console.log(data['resultSets'][0]['rowSet'])
+        //console.log("spot", data['resultSets'][0]['rowSet'][5])
         setPlayerSpotShooting(data['resultSets'][0]['rowSet'])
       }
     )
@@ -87,10 +103,19 @@ function App(){
 
   return (
     <div>
-      <Header />
-      <YearDropdown years={years} selectedYear={selectedYear} onChange={handleYearChange} />
-      <SearchBar onSearch={handleSearch} /> {/* Pass handleSearch function to the SearchBar */}
-      <PlayersDropdown playerNames={playerNames} onSelectPlayerName={handlePlayerNameSelect}/>
+        <Header />
+            <YearDropdown years={years} selectedYear={selectedYear} onChange={handleYearChange} />
+            <SearchBar onSearch={handleSearch} />
+            <PlayersDropdown playerNames={playerCombineStats} onSelectPlayerName={handlePlayerSelected}/>
+            {selectedPlayer && (
+              <div>
+                <DrillResultsSection drillResultsData={selectedPlayer}/>
+                <SpotShootingSection spotShootingData={selectedPlayer}/>
+                <NonStationaryShootingSection nonStationaryShootingData={selectedPlayer}/>
+                <PlayerAnthroSection playerAnthroData={selectedPlayer}/>
+              </div>
+            )}
+            <ComparePlayers />            
     </div>
   );
 };
