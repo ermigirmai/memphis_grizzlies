@@ -11,13 +11,18 @@ const Header = () => {
           alt="Header-Logo"
           style={{ height: '80px', marginRight: '10px' }}
         />
-        Memphis Grizzlies
+        Memphis Grizzlies Draft Room
       </CHeaderBrand>
       <CHeaderNav className="ml-auto">
         <CNavItem>
-          <CNavLink to="/dashboard">Dashboard</CNavLink>
+          <CNavLink to="/compare">Compare</CNavLink>
         </CNavItem>
-        {/* Add more navigation items here */}
+        <CNavItem>
+          <CNavLink to="/compare">Contact</CNavLink>
+        </CNavItem>
+        <CNavItem>
+          <CNavLink to="/compare">Calendar</CNavLink>
+        </CNavItem>
       </CHeaderNav>
     </CHeader>
   );

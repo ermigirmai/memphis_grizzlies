@@ -1,0 +1,25 @@
+.section {
+    border: 2px solid #5d77aa;
+    border-radius: 4px;
+    padding: 10px;
+    margin: 20px;
+  }
+  
+  .drill-results-container {
+    display: flex;
+    flex-wrap: wrap;
+  }
+  
+  .table-container {
+    flex:5;
+    padding: 1px;
+  }
+  
+  .chart-container {
+    flex:5;
+    padding: px;
+  }
+
+  .custom-table-striped {
+    background-color: red;
+  }

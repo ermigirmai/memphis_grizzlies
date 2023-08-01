@@ -1,13 +1,16 @@
 import React, {useState, useEffect} from 'react';
-import { BrowserRouter, Route, Routes } from 'react-router-dom';
+import { CSpinner } from '@coreui/react';
 
 import './App.css';
+import './components/PlayerWatchList.css'
+import './components/Constants.js';
 
 import Header from './components/Header';
 import YearDropdown from './components/YearDropdown';
-import SearchBar from './components/SearchBar';
+// import SearchBar from './components/SearchBar';
 import PlayersDropdown from './components/PlayersDropdown';
-import ComparePlayers from './components/ComparePlayers';
+// import ComparePlayers from './components/ComparePlayers';
+// import PlayerWatchList from './components/PlayerWatchList';
 
 import DrillResultsSection from './components/DrillResultsSection';
 import SpotShootingSection from './components/SpotShootingSection';
@@ -15,12 +18,23 @@ import NonStationaryShootingSection from './components/NonStationaryShootingSect
 import PlayerAnthroSection from './components/PlayerAnthroSection';
 
 function App(){
-  const years = ["2019", "2020", "2021", "2022", "2023"];
-  const PLAYER_ID_INDEX = 1;
+  
+  const [loading, setLoading] = useState(false);
+
+  const years = ["Select Year", "2023", "2022", "2021", "2020", "2019"];
 
   const [selectedYear, setSelectedYear] = useState(years[0]);
   const [selectedPlayer, setSelectedPlayer] = useState(null);
+  const [selectedPlayerName, setSelectedPlayerName] = useState(null);
 
+  const [selectedPlayersWatchList, setSelectedPlayersWatchList] = useState([]);
+
+  const [selectedPlayerDrillResults, setSelectedPlayerDrillResults] = useState(null);
+  const [selectedPlayerSpotShooting, setSelectedPlayerSpotShooting] = useState(null);
+  const [selectedPlayerNonShooting, setSelectedPlayerNonShooting] = useState(null);
+  const [selectedPlayerAnthro, setSelectedPlayerAnthro] = useState(null);
+
+  const [playerCombineStatsAverages, setPlayerCombineStatsAverages] = useState(null);
   const [playerCombineStatsAnthroAverage, setPlayerCombineStatsAnthroAverage] = useState([{}])
   const [playerCombineStatsDrillAverage, setPlayerCombineStatsDrillAverage] = useState([{}])
   const [playerCombineStatsSpotShootingAverage, setPlayerCombineStatsSpotShootingAverage] = useState([{}])
@@ -39,9 +53,23 @@ function App(){
 
   const handlePlayerSelected = (selectedPlayerName, selectedPlayerId) =>
   {
-    const selectedPlayerData = playerCombineStats.find((player) => player[PLAYER_ID_INDEX] == selectedPlayerId);
+    setSelectedPlayerName(selectedPlayerName)
 
+    const selectedPlayerData = playerCombineStats.find((player) => player[1] == selectedPlayerId);
     setSelectedPlayer(selectedPlayerData);
+
+    const selectedPlayerDrillResultsData = playerDrillResults.find((player) => player[1] == selectedPlayerId);
+    setSelectedPlayerDrillResults(selectedPlayerDrillResultsData);
+
+    const selectedPlayerSpotShootingData = playerSpotShooting.find((player) => player[1] == selectedPlayerId);
+    setSelectedPlayerSpotShooting(selectedPlayerSpotShootingData);
+
+    const selectedPlayerNonStationaryData = playerNonStationaryShooting.find((player) => player[1] == selectedPlayerId);
+    setSelectedPlayerNonShooting(selectedPlayerNonStationaryData);
+
+    const selectedPlayerAnthroData = playerAnthro.find((player) => player[1] == selectedPlayerId);
+    setSelectedPlayerAnthro(selectedPlayerAnthroData);
+
   }
 
   const handleSearch = (searchTerm) => {
@@ -54,13 +82,64 @@ function App(){
     setPlayerCombineStats(filteredPlayers);
   };
 
+  const handlePlayerAdd = (player) => {
+    setSelectedPlayersWatchList((prevPlayers) => [...prevPlayers, player]);
+  };
+
+  const computeCombineAverages = (data) => {
+    const numPlayers = data.length;
+
+    const sumArray = new Array(47).fill(0);
+    const indexArray = new Array(47).fill(0);
+    const avgArray = new Array(47).fill(0);
+
+    for (const player of data){
+      for (var i = 6; i<47; i++)
+      {
+        if ((i == 6 || i == 8 || i == 11 || i == 13 || i == 15 || i == 16 || i == 17 || i == 18 || i == 19 || i == 20 || i == 21 || i == 22)
+            && player[i] != null && player[i] != undefined)
+        {
+          sumArray[i] = sumArray[i] + player[i];
+          indexArray[i]++;
+        }
+        else if (i == 10 && player[i] != null && player[i] != undefined && player[i] != "") 
+        {
+          var weight_int = parseFloat(player[i])
+          sumArray[i] = sumArray[i] + weight_int
+          indexArray[i]++;
+        }
+        else if (i > 24 && i < 47 && player[i] != null && player[i] != undefined && player[i] != "")
+        {
+          var [startNum, endNum] = player[i].split('-');
+          var startValue = parseInt(startNum, 10);
+          var endValue = parseInt(endNum, 10);
+
+          sumArray[i] = sumArray[i] + ((startValue / endValue) * 100);
+          indexArray[i]++;
+        }
+      }
+    }
+
+    for (let i=6; i<47; i++)
+    {
+      if (sumArray[i] > 0)
+      {
+        avgArray[i] = sumArray[i]/indexArray[i];
+      }
+    }
+    setPlayerCombineStatsAverages(avgArray)
+  }
+
   useEffect(() => {
+    setLoading(true);
+
     fetch("/combinestats?year="+selectedYear).then(
       res => res.json()
     ).then(
       data => {
+        const playerData = data['resultSets'][0]['rowSet']
         setPlayerCombineStats(data['resultSets'][0]['rowSet'])
-        //console.log("comb", data['resultSets'][0]['rowSet'][5])
+        computeCombineAverages(playerData)
       }
     )
 
@@ -68,7 +147,6 @@ function App(){
       res => res.json()
     ).then(
       data => {
-        //console.log("drill", data['resultSets'][0]['rowSet'][5])
         setPlayerDrillResults(data['resultSets'][0]['rowSet'])
       }
     )
@@ -77,7 +155,6 @@ function App(){
       res => res.json()
     ).then(
       data => {
-        //console.log("spot", data['resultSets'][0]['rowSet'][5])
         setPlayerSpotShooting(data['resultSets'][0]['rowSet'])
       }
     )
@@ -86,7 +163,6 @@ function App(){
       res => res.json()
     ).then(
       data => {
-        //console.log(data['resultSets'][0]['rowSet'])
         setPlayerNonStationaryShooting(data['resultSets'][0]['rowSet'])
       }
     )
@@ -95,27 +171,36 @@ function App(){
       res => res.json()
     ).then(
       data => {
-        //console.log(data['resultSets'][0]['rowSet'])
         setPlayerAnthro(data['resultSets'][0]['rowSet'])
       }
     )
+
+    setLoading(false);
+
   }, [selectedYear]);
 
   return (
-    <div>
+    <div style={{ backgroundColor: '#f3f5f6'}}>
         <Header />
-            <YearDropdown years={years} selectedYear={selectedYear} onChange={handleYearChange} />
-            <SearchBar onSearch={handleSearch} />
-            <PlayersDropdown playerNames={playerCombineStats} onSelectPlayerName={handlePlayerSelected}/>
-            {selectedPlayer && (
-              <div>
-                <DrillResultsSection drillResultsData={selectedPlayer}/>
-                <SpotShootingSection spotShootingData={selectedPlayer}/>
-                <NonStationaryShootingSection nonStationaryShootingData={selectedPlayer}/>
-                <PlayerAnthroSection playerAnthroData={selectedPlayer}/>
-              </div>
-            )}
-            <ComparePlayers />            
+        {/* <PlayerWatchList/> */}
+        <div>
+        <YearDropdown years={years} selectedYear={selectedYear} onChange={handleYearChange} />
+        {/* <SearchBar onSearch={handleSearch} /> */}
+        {loading ? (
+          <CSpinner color="primary" size="lg" className="spinner" />
+        ) : (
+          <PlayersDropdown size="lg" playerNames={playerCombineStats} onSelectPlayerName={handlePlayerSelected} handlePlayerAddToWatchList={handlePlayerAdd}/>
+          )}
+        {selectedPlayer && (
+          <div style={{ backgroundColor: '#f3f5f6'}}>
+            <DrillResultsSection drillResultsData={selectedPlayerDrillResults} selectedPlayerName={selectedPlayerName} drillResultAverages={playerCombineStatsAverages.slice(18, 24)}/>
+            <SpotShootingSection spotShootingData={selectedPlayerSpotShooting} selectedPlayerName={selectedPlayerName} selectedPlayerData={selectedPlayer.slice(24,39)} spotShootingAverages={playerCombineStatsAverages.slice(24, 39)}/>
+            <NonStationaryShootingSection nonStationaryShootingData={selectedPlayerNonShooting} selectedPlayerName={selectedPlayerName} selectedPlayerData={selectedPlayer.slice(39,47)} nonStationaryAverages={playerCombineStatsAverages.slice(39,47)}/>
+            <PlayerAnthroSection playerAnthroData={selectedPlayerAnthro} selectedPlayerName={selectedPlayerName} selectedPlayerData={selectedPlayer.slice(6,18)} anthroAverages={playerCombineStatsAverages.slice(6, 18)}/>
+          </div>
+        )}
+        </div>
+        {/* <ComparePlayers /> */}
     </div>
   );
 };

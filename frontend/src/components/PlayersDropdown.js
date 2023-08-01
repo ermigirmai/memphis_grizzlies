@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react'
-import { CCard, CCardBody, CCardText, CCardTitle, CFormSelect } from '@coreui/react';
+import { CCard, CCardBody, CCardText, CCardTitle, CFormSelect, CButton } from '@coreui/react';
 
-const PlayersDropdown = ({ playerNames, onSelectPlayerName }) => {
+const PlayersDropdown = ({ playerNames, onSelectPlayerName, handlePlayerAddToWatchList }) => {
 
     const PLAYER_ID_INDEX = 1;
     const PLAYER_FULLNAME_INDEX = 4;
@@ -42,19 +42,25 @@ const PlayersDropdown = ({ playerNames, onSelectPlayerName }) => {
         });
     };
 
+    const handleAddPlayer = (playerName) => {
+        // Call the function passed from App.js to add the player to the left pane menu
+        handlePlayerAddToWatchList(playerName);
+    };
+
     return (
-        <div>
-            <CFormSelect custom_name="playerDropdown" onChange={handlePlayerSelect}>
-                <option value="">Select a player...</option>
+        <div >
+            <CFormSelect custom_name="playerDropdown" size="lg" onChange={handlePlayerSelect} style={{ width: '500px', margin: '15px auto', backgroundColor: '#5d77aa', outline: '2px solid #ffbc1d', color: 'white'}}>
+                <option value="">Select Player</option>
                 {generatePlayerNamesList(playerNames)}
             </CFormSelect>
             {
                 selectedPlayer && selectedPlayerPosition && 
-                <div> 
-                    <CCard style={{ width: '15rem' }}>
+                <div style={{ margin: '50px' }}> 
+                    <CCard style={{ width: '20rem', height: '15rem', backgroundColor:'white', outline: '2px solid #5d77aa', color: '#5d77aa'}}>
                         <CCardBody>
-                            <CCardTitle>{selectedPlayer}</CCardTitle>
-                            <CCardText>{selectedPlayerPosition}</CCardText>
+                            <CCardTitle style={{fontSize:'28px'}}>{selectedPlayer}</CCardTitle>
+                            <CCardText style={{ color: '#ffbc1d', fontSize:'20px'}}>{selectedPlayerPosition}</CCardText>
+                            <CButton style={{ borderRadius: '0px', backgroundColor: '#ffbc1d', color: '#5d77aa'}} onClick={() => handleAddPlayer(selectedPlayer)}>Add to watchlist</CButton> {/* Add the onClick event for the add icon */}
                         </CCardBody>
                     </CCard>
                 </div>

@@ -15,6 +15,7 @@ def get_combinestats():
 def get_combinedrillresults():
     year = request.args.get('year', '2023')
     drillresults = draftcombinedrillresults.DraftCombineDrillResults(league_id='00', season_year=year)
+    print("type", type(drillresults))
     drillresults_dict = drillresults.get_dict()
     print("/drillresults")
     return jsonify(drillresults_dict)
