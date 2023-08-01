@@ -48,7 +48,7 @@ const PlayersDropdown = ({ playerNames, onSelectPlayerName, handlePlayerAddToWat
     };
 
     return (
-        <div >
+        <div>
             <CFormSelect custom_name="playerDropdown" size="lg" onChange={handlePlayerSelect} style={{ width: '500px', margin: '15px auto', backgroundColor: '#5d77aa', outline: '2px solid #ffbc1d', color: 'white'}}>
                 <option value="">Select Player</option>
                 {generatePlayerNamesList(playerNames)}

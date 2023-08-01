@@ -4,7 +4,7 @@ import { CDropdown, CDropdownItem, CDropdownMenu, CDropdownToggle } from '@coreu
 const YearDropdown = ({ years, selectedYear, onChange }) => {
   return (
     <div style={{ display: 'flex', justifyContent: 'center' }}>
-      <CDropdown style={{ width: '150px', margin:'10px' }}>
+      <CDropdown style={{ width: '150px', margin:'15px' }}>
         <CDropdownToggle caret style={{ backgroundColor: '#5d77aa', outline: '2px solid #ffbc1d', color: 'white'}}>{selectedYear}</CDropdownToggle>
         <CDropdownMenu>
           {years.map((year) => (
